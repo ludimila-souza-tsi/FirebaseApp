@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'notifications.dart';
 
 class NotesPage extends StatefulWidget {
  const NotesPage({super.key});
@@ -114,6 +115,30 @@ class _NotesPageState extends State<NotesPage> {
      if (editingId == docId) _cancelInlineEdit();
    }
  }
+
+ Future<void> _add() async {
+   final text = createController.text.trim();
+   if (text.isEmpty) {
+     setState(() => message = 'Preencha a descrição.');
+     return;
+   }
+   setState(() {
+     loading = true;
+     message = null;
+   });
+   try {
+     await _col
+         .add({'description': text, 'createdAt': FieldValue.serverTimestamp()})
+         .then(
+           (note) => Notifications.show(
+             id: note.id.hashCode,
+             title: 'Nota criada',
+             body: text,
+             payload: note.id,
+           ),
+         );
+     createController.clear();
+
 
  @override
  Widget build(BuildContext context) {
